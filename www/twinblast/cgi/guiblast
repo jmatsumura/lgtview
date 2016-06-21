@@ -14,8 +14,10 @@ Simple script to add a graphics image to a blast report. Also indexes alignment 
 and makes for quick retrieval by query ID.
 
 =head1 AUTHOR - David R. Riley
+Revised by James Matsumura (05/2016)
 
 e-mail: driley@som.umaryland.edu
+e-mail: jmatsumura@som.umaryland.edu
 
 =cut
 
@@ -34,6 +36,19 @@ use URI::Escape;
 use JSON;
 use IPC::Open3;
 use POSIX qw(strftime);
+use DBI;
+use Config::IniFiles;
+use File::Slurp;
+
+my $conf = Config::IniFiles->new( -file => "$ENV{CONF}");
+my $chosen_db = $ENV{CHOSEN_DB};
+my $db = $conf->val($chosen_db, 'dbname');
+my $host = $conf->val($chosen_db, 'hostname');
+my $user = $conf->val($chosen_db, 'username');
+my $pw = $conf->val($chosen_db, 'password');
+
+my $dbh = DBI->connect("DBI:mysql:database=$db;host=$host",
+                            "$user", "$pw");
 
 # Deal with the CGI inputs.
 my $cgi = CGI->new;
@@ -42,28 +57,26 @@ my $list = uri_unescape($cgi->param('list'));
 my $id = uri_unescape($cgi->param('id'));
 my $leftsuff = uri_unescape($cgi->param('leftsuff'));
 my $rightsuff = uri_unescape($cgi->param('rightsuff'));
+my $qlist = uri_unescape($cgi->param('qlist'));
 
 my $skip_text_alignments = 0;
 my $max_hits = 20;
 my $max_hsps = 20;
 
-# Web-accessible directory where image file should be written.
-my $img_dir = '/var/www/twinblast/images/';
+# Root of the web site (usually htdocs or html)
+my $www_root = $ENV{WEB_ROOT};
 
-# URL to web-accessible directory where image files are written.
-my $img_url = '/twinblast/images/';
+# URL to web-accessible directory where image files are written. (Basically where in www_root are the images)
+my $img_url = $ENV{IMG_URL};
 
 # Place where blast indexes should be written.
-my $idx_dir = '/var/www/twinblast/indexes/';
+my $idx_dir = $ENV{IDX_DIR};
 
 # Required prefix for all files
-my $prefix = '/var/www/twinblast/files/';
-
-#my $idx_dir = '/tmp/';
+my $prefix = $ENV{PREFIX};
 
 my $print_list = $cgi->param('printlist');
 my $fname = '';
-my $qlist = $cgi->param('qlist');
 my $md5;
 my $start = $cgi->param('start');
 my $limit = $cgi->param('limit');
@@ -72,6 +85,8 @@ my $index;
 # Deal with a single blast file here
 if($file) {
     $file = "$prefix/$file";
+    # Little safety precaution here.
+    #$file =~ s/\.\.//g;
     $file =~ s/\/\//\//g;
     $fname = basename($file);
     $md5 = md5_hex($file);
@@ -80,33 +95,12 @@ if($file) {
 # Deal with a bunch of blast files here
 if($list) {
     $list = "$prefix/$list";
+    # Little safety precaution here.
+    #$list =~ s/\.\.//g;
     $list =~ s/\/\//\//g;
     $fname = basename($list);
     $md5 = md5_hex($list);
 }
-
-
-
-# If someone passes their own list file in we'll deal with it here. Need to move this
-# somewhere else
-if($qlist) {
-    $qlist = "$prefix/$qlist";
-    $qlist =~ s/\/\//\//g;
-    my @querys;
-    tie @querys, 'Tie::File', $qlist;
-    my $total = scalar @querys;
-    print "Content-type: text/plain\n\n";
-    print "{total: $total,\nroot: [\n";
-    map {
-        if($_) {
-        print to_json({'name' => $_}).",\n";
-        }
-    } @querys[$start..$start+$limit];
-    print "]}";
-    exit;
-}
-
-
 
 my $indexed_file = "$idx_dir/$md5.idx";
 my $indexed = -e $indexed_file;
@@ -119,11 +113,13 @@ $index = Bio::Index::Blast->new(-filename => $indexed_file,
 if($indexed && &check_prep_status($md5)) {
 
     if($print_list) {
-        &print_list();
+       	&print_list();
     }
     else {
         &print_html();
     }
+	# Done using the database at this point
+	$dbh->disconnect();
 }
 
 # If our files aren't ready then we'll hit this.
@@ -138,32 +134,60 @@ sub print_list {
 #        &make_query_list($files,$list_file);
 #    }
     my @querys;
-    tie @querys, 'Tie::File', $list_file;
+	if($qlist) {
+		$qlist = "$prefix/$qlist";
+    	$qlist =~ s/\/\//\//g;
+		@querys = read_file($qlist);
+	} else {
+		tie @querys, 'Tie::File', $list_file;
+	}
     my $total = scalar @querys;
+
+	# Need to readjust amount of output if the amount present is less than
+	# the limit so that repeat values aren't appended at the end. 
+	if ($total < $limit) {
+		$limit = $total-1; # account for 0 index
+	}
+
+	my $counter = 0;
+
     print "Content-type: text/plain\n\n";
     print "{total: $total,\nroot: [\n";
     map {
-        my @f = split(/\t/, $_);
+        my @f;
+		if($qlist){
+			chomp $querys[$counter];
+			$f[0] = $querys[$counter];
+			
+			if($counter < $total-1) { # account for 0 index
+				$counter++;
+			}
+		} else {
+			@f = split(/\t/, $_);
+		}
+
         if($f[0]) {
-            print to_json({'name' => $f[0]
-#                       'length' => $f[1],
-#                       'num_hits' => $f[2]
-                  }).",\n";
-        }
-        else { last; }
-    } @querys[$start..$start+$limit];
-    print "]}";
-    exit;    
+
+			# Pull annotation note from DB
+			my $annot_note = $dbh->selectrow_array('SELECT cv.name FROM cv, curation WHERE curation.seq_id=? AND curation.cv_id=cv.id', undef, $f[0]);
+
+			if(not defined $annot_note){
+				$annot_note='';
+			}
+
+   	        print to_json({'name' => $f[0],
+   	                       'annot' => $annot_note
+   	                      }).",\n";
+   	    }
+   	    else { last; }
+	} @querys[$start..$start+$limit];
+   	print "]}";
+   	exit;    
 }
 
 
 sub print_html {
 
-#my $fooh = $index->get_stream($id);
-#for(my $i =0;$i<20;$i++) {
-#my $foo = <$fooh>;
-#print STDERR $foo;
-#}                                       
 my $fh = $index->get_stream($id);
 my $format = 'blast';
 my $searchio = Bio::SearchIO->new(-noclose => 1,
@@ -250,14 +274,14 @@ while (my $hit = $result->next_hit) {
 my ($url,$map,$mapname);
 
    if($skip_text_alignments) {
-       ($url,$map,$mapname) = $panel->image_and_map(-root => $img_dir,
+       ($url,$map,$mapname) = $panel->image_and_map(-root => $www_root,
                          -url => $img_url,
                          -link => 'http://ncbi.nlm.nih.gov/nuccore?term=$name',
                          -mapname => "$id");
 
     }
     else {
-        ($url,$map,$mapname) = $panel->image_and_map(-root => $img_dir,
+        ($url,$map,$mapname) = $panel->image_and_map(-root => $www_root,
                          -url => $img_url,
                          -link => '#$name',
 #                         -onclick => "Ext.get('$name').scrollIntoView()",
@@ -316,21 +340,6 @@ sub make_query_list {
         $line =~ s/$rightsuff$//;;
         print OUT "$line\n";
         }
-#        open(my $fh, "<$f") or die "Unable to open $f\n";;
-#        my $searchio = Bio::SearchIO->new(-noclose => 1,
-#                                          -format => 'blast',
-#                                          -best => 1,
-#                                          -fh => $fh);
-#        $searchio->attach_EventHandler(Bio::SearchIO::FastResultEventBuilder->new); 
-        # Print out the query name, query length and number of hits.
-#        while(my $res = $searchio->next_result()) {
-#            my $name = $res->query_name;
-#            $name =~ s/$leftsuff$//;
-#            $name =~ s/$rightsuff$//;
-#            print OUT join("\t", ($name));
-#            print OUT "\n";        
-#        }
-#        close $fh;
     }
     close OUT;
     `sort -u $file > $file\_sorted`;
@@ -345,10 +354,12 @@ sub get_input_list {
         open IN, "<$list" or die;
         while(<IN>) {
             chomp;
+            s/\.\.//g;
             push(@$files, $_);
         }
     }
     else {
+        #$files =~ s/\.\.//g;
         $files = [$file];
     }
     return $files;
@@ -482,3 +493,5 @@ sub print_message {
          success => 1});  
 
 }
+
+
