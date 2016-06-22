@@ -30,7 +30,7 @@ use DBI;
 # Extract MySQL connection info from a conf file
 my $chosen_db = $ARGV[1];
 
-my $dbh = DBI->connect("DBI:mysql:;host=localhost",
+my $dbh = DBI->connect("DBI:mysql:;host=MySQL",
 						"root", "");
 
 # First create the custom database
