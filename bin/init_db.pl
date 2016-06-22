@@ -21,7 +21,7 @@ e-mail: jmatsumura@som.umaryland.edu
 use strict;
 use DBI;
 
-my $dbh = DBI->connect("DBI:mysql:database=twinblast;host=172.18.0.2:3306",
+my $dbh = DBI->connect("DBI:mysql:database=twinblast;host=$ARGV[0]:3306",
 						"twinblast", "twinblast");
 
 # Populate the database with the two necessary tables for curation
