@@ -21,7 +21,8 @@ e-mail: jmatsumura@som.umaryland.edu
 use strict;
 use DBI;
 
-my $dbh = DBI->connect("DBI:mysql:database=twinblast;host=$ARGV[0];port=3306",
+# Using the Docker default IP now
+my $dbh = DBI->connect("DBI:mysql:database=twinblast;host=172.18.0.1;port=3306",
 						"twinblast", "twinblast");
 
 # Populate the database with the two necessary tables for curation
