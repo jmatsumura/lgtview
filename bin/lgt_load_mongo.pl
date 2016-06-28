@@ -46,7 +46,7 @@ if( $options{'help'} ){
 
 $MongoDB::BSON::looks_like_number = 1;
 my $CHUNK_SIZE = $options{chunk_size} ? $options{chunk_size} : 10000;
-my $samtools = "/usr/local/bin/samtools";
+my $samtools = "/usr/bin/samtools";
 my $mongo_conn = MongoDB::Connection->new(host => $options{host});
 my $mongo_db = $mongo_conn->get_database($options{db});
 my $admin = $mongo_conn->get_database('admin');

@@ -22,7 +22,7 @@ my $results = GetOptions (
     'assume_unique=s',
     'help|h') || pod2usage();
 
-my $SAMTOOLS_BIN="/usr/local/bin/samtools";
+my $SAMTOOLS_BIN="/usr/bin/samtools";
 
 my $complete_header = [];
 
