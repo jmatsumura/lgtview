@@ -46,7 +46,7 @@ my $results = GetOptions(
 );
 
 my $port = $options{port} ? $options{port} : 27017;
-my $lgtseek = LGTSeek->new2( { \%options } );
+my $lgtseek = LGTSeekMongo->new2( { \%options } );
 
 print STDERR "Here with taxon_host: $lgtseek->{taxon_host}\:$lgtseek->{port}.\n";
 
