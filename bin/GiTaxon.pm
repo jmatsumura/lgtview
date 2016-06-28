@@ -31,7 +31,7 @@ sub new {
     $self->{'nodes'}        = $args->{'nodes'}      ? $args->{'nodes'}      : '/files_for_mongo/nodes.dmp';
     $self->{'names'}        = $args->{'names'}      ? $args->{'names'}      : '/files_for_mongo/names.dmp';
     $self->{'gi2tax'}       = $args->{'gi2tax'}     ? $args->{'gi2tax'}     : '/files_for_mongo/gi_taxid_nucl.dmp';
-    $self->{'chunk_size'}   = $args->{'chunk_size'} ? $args->{'chunk_size'} : 10000;
+    $self->{'chunk_size'}   = $args->{'chunk_size'} ? $args->{'chunk_size'} : 999;
     $self->{'idx_dir'}      = $args->{'idx_dir'}    ? $args->{'idx_dir'}    : '/tmp/';
     $self->{'host'}         = $args->{'host'}       ? $args->{'host'}       : '172.18.0.1:27017';
     $self->{'gi_db'}        = $args->{'gi_db'}      ? $args->{'gi_db'}      : 'gi2taxon';
@@ -280,7 +280,7 @@ sub insert_chunk {
     my $self  = shift;
     my $coll  = shift;
     my $chunk = shift;
-    $coll->batch_insert( $chunk, { 'safe' => 1 } );
+    $coll->insert( $chunk, { 'safe' => 1 } );
 }
 
 sub get_mongodb_connection {
