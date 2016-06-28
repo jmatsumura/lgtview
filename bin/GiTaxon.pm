@@ -10,53 +10,33 @@ Utility to look up taxon information in a mongo database.
 =head1 AUTHOR
 
 David Riley
+James Matsumura (updated July 2016)
 
 driley@som.umaryland.edu
+jmatsumura@som.umaryland.edu
 
 =cut
 
 package GiTaxon;
 use strict;
-use warnings;
 use MongoDB;
 use Bio::DB::Taxonomy;
 use Bio::DB::EUtilities;
 use File::Find;
 
-my $NODES = '/local/db/repository/ncbi/blast/20120414_001321/taxonomy/taxdump/nodes.dmp';
-my $NAMES =  '/local/db/repository/ncbi/blast/20120414_001321/taxonomy/taxdump/names.dmp';
-my $GI2TAX = '/local/db/repository/ncbi/blast/20120414_001321/taxonomy/gi_taxid_nucl.dmp';
-my $CHUNK_SIZE = 10000;
-my $HOST = 'revan.igs.umaryland.edu:10001';
-my $DB = 'gi2taxon';
-my $COLL = 'gi2taxonnuc';
-my $TMP = '/tmp';
-
 sub new {
     my ( $class, $args ) = @_;
 
     my $self = {};
-    $self->{'nodes'} =
-        $args->{'nodes'}
-      ? $args->{'nodes'}
-	  : $NODES;
-    $self->{'names'} =
-        $args->{'names'}
-      ? $args->{'names'}
-	  : $NAMES;
-    $self->{'gi2tax'} =
-        $args->{'gi2tax'}
-      ? $args->{'gi2tax'}
-      : $GI2TAX;
-    $self->{'chunk_size'} =
-      $args->{'chunk_size'} ? $args->{'chunk_size'} : $CHUNK_SIZE;
-	$self->{'host'} = 'mongodb://';
-    $self->{'host'} .=
-      $args->{'host'} ? $args->{'host'} : $HOST;
-	$self->{'gi_db'} = $args->{'gi_db'} ? $args->{'gi_db'} : $DB;
-    $self->{'gi_coll'} =
-      $args->{'gi_coll'} ? $args->{'gi_coll'} : $COLL;
-    $self->{'taxonomy_dir'} = $args->{'taxonomy_dir'} ? $args->{'taxonomy_dir'} : $TMP;
+    $self->{'nodes'}        = $args->{'nodes'}      ? $args->{'nodes'}      : '/data/nodes.dmp';
+    $self->{'names'}        = $args->{'names'}      ? $args->{'names'}      : '/data/names.dmp';
+    $self->{'gi2tax'}       = $args->{'gi2tax'}     ? $args->{'gi2tax'}     : '/data/gi_taxid_nucl.dmp';
+    $self->{'chunk_size'}   = $args->{'chunk_size'} ? $args->{'chunk_size'} : 10000;
+    $self->{'idx_dir'}      = $args->{'idx_dir'}    ? $args->{'idx_dir'}    : '/tmp/';
+    $self->{'host'}         = $args->{'host'}       ? $args->{'host'}       : '172.18.0.1:27017';
+    $self->{'gi_db'}        = $args->{'gi_db'}      ? $args->{'gi_db'}      : 'gi2taxon';
+    $self->{'gi_coll'}      = $args->{'gi_coll'}    ? $args->{'gi_coll'}    : 'gi2taxonnuc';
+    $self->{'taxonomy_dir'} = $args->{'idx_dir'}    ? $args->{'idx_dir'}    : '/tmp';
 
     $self->{'cache'} = {};
 
@@ -66,7 +46,7 @@ sub new {
         $gi_tax_file = 'gi_taxid_prot.dmp';
     }
 
-# This option can be used if the user want's to override all the nodes/names params at once
+    # This option can be used if the user want's to override all the nodes/names params at once
     if ( $args->{'taxon_dir'} ) {
         print STDERR "Here with a taxon directory $args->{'taxon_dir'}\n";
 
@@ -98,6 +78,15 @@ sub new {
         }
     }
 
+    if ( $args->{'nodes'} ) {
+        $self->{'nodes'} = $args->{'nodes'};
+    }
+    if ( $args->{'names'} ) {
+        $self->{'names'} = $args->{'names'};
+    }
+    if ( $args->{'gi2tax'} ) {
+        $self->{'gi2tax'} = $args->{'gi2tax'};
+    }
     $self->{'db'} = Bio::DB::Taxonomy->new(
         -source    => 'flatfile',
         -nodesfile => $self->{'nodes'},
@@ -130,23 +119,22 @@ sub getTaxon {
     }
     my $taxonid = '';
     my $retval  = {};
+
     # First check the cache
     if ( $self->{cache}->{$gi} ) {
         $retval = $self->{cache}->{$gi};
     }
     else {
-        my $taxon_lookup =
-          $self->{'gi2taxon'}->find_one( { 'gi' => "$gi" }, { 'taxon' => 1 } );
+        my $taxon_lookup = $self->{'gi2taxon'}->find_one( { 'gi' => "$gi" }, { 'taxon' => 1 } );
 
         if ($taxon_lookup) {
             $taxonid = $taxon_lookup->{'taxon'};
         }
         else {
-            print STDERR
-"*** GiTaxon-getTaxon: Unable to find taxon for $gi, Checking NCBI\n";
+            print STDERR "*** GiTaxon-getTaxon: Unable to find taxon for $gi, Checking NCBI\n";
             my $factory = Bio::DB::EUtilities->new(
                 -eutil => 'esummary',
-                -email => 'example@foo.bar',
+                -email => 'krobsmells@foo.bar',
                 -db    => $self->{'type'},
                 -id    => [$gi]
             );
@@ -159,17 +147,47 @@ sub getTaxon {
                     print STDERR "Unable to find taxonid at NCBI\n";
                 }
                 else {
-                    $self->{'gi2taxon'}->update(
-                        { 'gi'     => "$gi" },
-                        { 'gi'     => "$gi", 'taxon' => $taxonid },
-                        { 'upsert' => 1 }
-                    );
-                    print STDERR
-                      "*** GiTaxon-getTaxon: Added $gi\t$taxonid to the db\n";
+                    $self->{'gi2taxon'}->update( { 'gi' => "$gi" }, { 'gi' => "$gi", 'taxon' => $taxonid }, { 'upsert' => 1 } );
+                    print STDERR "*** GiTaxon-getTaxon: Added $gi\t$taxonid to the db\n";
                 }
             }
 
         }
+        ## ORIGINAL VVV
+        # my $taxon = $self->{'db'}->get_taxon( -taxonid => $taxonid );
+
+        # if ( !$taxon ) {
+        #     print STDERR "*** GiTaxon-getTaxon: Unable to find taxon for $gi\n";
+        # }
+        # if ( !$taxon ) {
+        #     $retval = {
+        #         'acc'      => $acc,
+        #         'gi'       => $gi,
+        #         'taxon_id' => $taxonid
+        #     };
+        # }
+        # elsif ( $taxon->isa('Bio::Taxon') ) {
+        #     my $name    = $taxon->scientific_name;
+        #     my $c       = $taxon;
+        #     my @lineage = ($name);
+        #     while ( my $parent = $self->{'db'}->ancestor($c) ) {
+        #         unshift @lineage, $parent->scientific_name;
+        #         $c = $parent;
+        #     }
+        #     $retval = {
+        #         'gi'       => $gi,
+        #         'acc'      => $acc,
+        #         'taxon_id' => $taxonid,
+        #         'name'     => $name,
+        #         'lineage'  => join( ";", @lineage )
+        #     };
+        # }
+        # else {
+        #     print STDERR "Had something other than a Bio::Taxon\n";
+
+        #     #   print join("\t", $taxonid),"\n";
+        # }
+        ## ORIGINAL ^^^
         ## NEW VVV 01.08.15 KBS v1.07
         ## I added this so that if the gi isn't in our DB we pull the data from NCBI
         if ( my $taxon = $self->{'db'}->get_taxon( -taxonid => $taxonid ) ) {
@@ -191,11 +209,9 @@ sub getTaxon {
             }
         }
         else {
-			# SAdkins 1/13/16 - URL in Entrez module is obsolete and incorrect
-			# We really should update BioPerl
-            my $db = Bio::DB::Taxonomy->new( -source => 'entrez', -location => 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/');
+            my $db = Bio::DB::Taxonomy->new( -source => 'entrez' );
             my $taxon = $db->get_taxon( -taxonid => $taxonid );
-            if ( $taxon->isa('Bio::Taxon') ) {
+                if ( $taxon->isa('Bio::Taxon') ) {
                 my $name    = $taxon->scientific_name;
                 my $c       = $taxon;
                 my @lineage = ($name);
@@ -212,8 +228,7 @@ sub getTaxon {
                 };
             }
             else {
-                print STDERR
-"**GiTaxon unable to find taxon for taxon_id: $taxonid & gi:$gi\n";
+                print STDERR "**GiTaxon unable to find taxon for taxon_id: $taxonid & gi:$gi\n";
             }
         }
 
@@ -226,13 +241,10 @@ sub getTaxon {
 sub getgi2taxon {
     my ( $self, $data_file ) = @_;
 
-    my $mongo =
-      $self->get_mongodb_connection( $self->{'gi_db'}, $self->{'host'} );
+    my $mongo = $self->get_mongodb_connection( $self->{'gi_db'}, $self->{'host'} );
     my $coll = $mongo->get_collection( $self->{'gi_coll'} );
-	# If collection not found in database, update the db using the datafile
-	if ( !$coll->find_one() ) {
-        print
-"Found nothing in database $self->{gi_db} collection $self->{gi_coll} on $self->{host}\n";
+    if ( !$coll->find_one() ) {
+        print "Found nothing in database $self->{gi_db} collection $self->{gi_coll} on $self->{host}\n";
         print "Getting the line count\n";
         my $lc = `wc -l $data_file`;
         chomp $lc;
@@ -242,8 +254,7 @@ sub getgi2taxon {
         my $num_in_chunk = 0;
         my $total        = 0;
         my @chunk;
-		
-		# In the data file, add new data to MongoDB database in chunks
+
         while (<IN>) {
             chomp;
             my ( $gi, $taxon ) = split( /\t/, $_ );
@@ -251,13 +262,7 @@ sub getgi2taxon {
             push( @chunk, { 'gi' => $gi, 'taxon' => $taxon } );
             if ( $num_in_chunk == $self->{'chunk_size'} ) {
                 $total += $num_in_chunk;
-                print join(
-                    "",
-                    (
-                        "\r", ( sprintf( '%.2f', ( ( $total / $lc ) * 100 ) ) ),
-                        "% complete"
-                    )
-                );
+                print join( "", ( "\r", ( sprintf( '%.2f', ( ( $total / $lc ) * 100 ) ) ), "% complete" ) );
                 $self->insert_chunk( $coll, \@chunk );
                 @chunk        = ();
                 $num_in_chunk = 0;
