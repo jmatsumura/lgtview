@@ -28,9 +28,9 @@ sub new {
     my ( $class, $args ) = @_;
 
     my $self = {};
-    $self->{'nodes'}        = $args->{'nodes'}      ? $args->{'nodes'}      : '/data/nodes.dmp';
-    $self->{'names'}        = $args->{'names'}      ? $args->{'names'}      : '/data/names.dmp';
-    $self->{'gi2tax'}       = $args->{'gi2tax'}     ? $args->{'gi2tax'}     : '/data/gi_taxid_nucl.dmp';
+    $self->{'nodes'}        = $args->{'nodes'}      ? $args->{'nodes'}      : '/files_for_mongo/nodes.dmp';
+    $self->{'names'}        = $args->{'names'}      ? $args->{'names'}      : '/files_for_mongo/names.dmp';
+    $self->{'gi2tax'}       = $args->{'gi2tax'}     ? $args->{'gi2tax'}     : '/files_for_mongo/gi_taxid_nucl.dmp';
     $self->{'chunk_size'}   = $args->{'chunk_size'} ? $args->{'chunk_size'} : 10000;
     $self->{'idx_dir'}      = $args->{'idx_dir'}    ? $args->{'idx_dir'}    : '/tmp/';
     $self->{'host'}         = $args->{'host'}       ? $args->{'host'}       : '172.18.0.1:27017';
@@ -287,8 +287,7 @@ sub get_mongodb_connection {
     my ( $self, $dbname, $host ) = @_;
 
     # First we'll establish our connection to mongodb
-    my $conn = MongoDB::Connection->new( host => $host );
-    $conn->query_timeout(60000000);
+    my $conn = MongoDB->connect($host);
     return $conn->get_database($dbname);
 }
 

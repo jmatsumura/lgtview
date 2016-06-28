@@ -38,7 +38,7 @@ Internal methods are usually preceded with a _
         getGiTaxon          : Create gi2taxon object
 =cut
 
-package LGTSeek;
+package LGTSeekMongo;
 our $VERSION = '1.12';
 use warnings;
 no warnings 'misc';
@@ -79,12 +79,15 @@ sub new2 {
         suffix_regex        => qr/\.[^\.]+/,
     };
 
+=head
+	(JM 2016) - Something is odd here and causing crashes. Leave out for now as it doesn't seem necessary for 
+	the main functionality anyway. 
     ## Now open the config file
     ## First determine the proper file path for the config file
     if ( defined $options->{conf_file} and $options->{conf_file} =~ /^\~(.*)/ ) {
         $options->{conf_file} = File::HomeDir->my_home . $1;
     }    ## This is incase the user passed a config file like ~/config.file
-	my $conf_file
+    my $conf_file
         = defined $options->{conf_file}
         ? $options->{conf_file}
         : File::HomeDir->my_home . "/.lgtseek.conf";    ## Open --conf_file or the default ~/.lgtseek.conf
@@ -112,8 +115,10 @@ sub new2 {
         }
     }
     else {
-        $self = $options;
-    }
+=cut
+
+    $self = $options;
+    #}
 
     bless $self;
     return $self;
