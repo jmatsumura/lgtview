@@ -50,6 +50,7 @@ use version;
 use File::Basename;
 use Data::Dumper;
 use GiTaxon;
+use Time::SoFar;
 use Cwd;
 $| = 1;
 
@@ -165,6 +166,21 @@ sub getGiTaxon {
     if ( $self->{verbose} ) { print STDERR "======== &getGiTaxon: Finished ========\n"; }
     $self->time_check;
     return $self->{gitaxon};
+}
+
+=head2 &time_check
+
+ Title   : time_check
+ Usage   : $lgtseek->time_check;
+ Function: Print STDERR the clock time that has passed since start.
+
+=cut
+
+sub time_check {
+    my $self        = shift;
+    my $no_optimize = 1;
+    my $elapsed     = runtime( [$no_optimize] );
+    if ( $self->{verbose} ) { print STDERR "Time Since Start: $elapsed\n"; }
 }
 
 1;
