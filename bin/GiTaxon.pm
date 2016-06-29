@@ -31,7 +31,7 @@ sub new {
     $self->{'nodes'}        = $args->{'nodes'}      ? $args->{'nodes'}      : '/files_for_mongo/nodes.dmp';
     $self->{'names'}        = $args->{'names'}      ? $args->{'names'}      : '/files_for_mongo/names.dmp';
     $self->{'gi2tax'}       = $args->{'gi2tax'}     ? $args->{'gi2tax'}     : '/files_for_mongo/gi_taxid_nucl.dmp';
-    $self->{'chunk_size'}   = $args->{'chunk_size'} ? $args->{'chunk_size'} : 999;
+    $self->{'chunk_size'}   = $args->{'chunk_size'} ? $args->{'chunk_size'} : 10000;
     $self->{'idx_dir'}      = $args->{'idx_dir'}    ? $args->{'idx_dir'}    : '/tmp/';
     $self->{'host'}         = $args->{'host'}       ? $args->{'host'}       : '172.18.0.1:27017';
     $self->{'gi_db'}        = $args->{'gi_db'}      ? $args->{'gi_db'}      : 'gi2taxon';
@@ -153,40 +153,6 @@ sub getTaxon {
             }
 
         }
-        ## ORIGINAL VVV
-        # my $taxon = $self->{'db'}->get_taxon( -taxonid => $taxonid );
-
-        # if ( !$taxon ) {
-        #     print STDERR "*** GiTaxon-getTaxon: Unable to find taxon for $gi\n";
-        # }
-        # if ( !$taxon ) {
-        #     $retval = {
-        #         'acc'      => $acc,
-        #         'gi'       => $gi,
-        #         'taxon_id' => $taxonid
-        #     };
-        # }
-        # elsif ( $taxon->isa('Bio::Taxon') ) {
-        #     my $name    = $taxon->scientific_name;
-        #     my $c       = $taxon;
-        #     my @lineage = ($name);
-        #     while ( my $parent = $self->{'db'}->ancestor($c) ) {
-        #         unshift @lineage, $parent->scientific_name;
-        #         $c = $parent;
-        #     }
-        #     $retval = {
-        #         'gi'       => $gi,
-        #         'acc'      => $acc,
-        #         'taxon_id' => $taxonid,
-        #         'name'     => $name,
-        #         'lineage'  => join( ";", @lineage )
-        #     };
-        # }
-        # else {
-        #     print STDERR "Had something other than a Bio::Taxon\n";
-
-        #     #   print join("\t", $taxonid),"\n";
-        # }
         ## ORIGINAL ^^^
         ## NEW VVV 01.08.15 KBS v1.07
         ## I added this so that if the gi isn't in our DB we pull the data from NCBI
