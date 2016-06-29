@@ -219,13 +219,15 @@ sub getgi2taxon {
         open IN, "<$data_file" or die "Unable to open $data_file\n";
         my $num_in_chunk = 0;
         my $total        = 0;
+		my $i = 0;
         my @chunk;
 
         while (<IN>) {
             chomp;
             my ( $gi, $taxon ) = split( /\t/, $_ );
             $num_in_chunk++;
-            push( @chunk, { 'gi' => $gi, 'taxon' => $taxon } );
+			$i++;
+            push( @chunk, {"_id" => $i, 'gi' => $gi, 'taxon' => $taxon } );
             if ( $num_in_chunk == $self->{'chunk_size'} ) {
                 $total += $num_in_chunk;
                 print join( "", ( "\r", ( sprintf( '%.2f', ( ( $total / $lc ) * 100 ) ) ), "% complete" ) );
