@@ -246,7 +246,7 @@ sub insert_chunk {
     my $self  = shift;
     my $coll  = shift;
     my $chunk = shift;
-    $coll->insert( $chunk, { 'safe' => 1 } );
+    $coll->insert_many( $chunk, { 'safe' => 1 } );
 }
 
 sub get_mongodb_connection {
