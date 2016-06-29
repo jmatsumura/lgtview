@@ -50,7 +50,7 @@ use version;
 use File::Basename;
 use Data::Dumper;
 use GiTaxon;
-use Time::SoFar;
+use Time::SoFar qw( runtime ); 
 use Cwd;
 $| = 1;
 
