@@ -471,23 +471,12 @@ sub process_line4 {
 
 
 sub getGi2Tax {
-    my $ncbitax = $options{ncbitax} ? $options{ncbitax} : '/local/db/repository/ncbi/blast/20120414_001321/taxonomy/taxdump/';
-    my $gi2tax = $options{gitax} ? $options{gitax} : '/local/db/repository/ncbi/blast/20120414_001321/taxonomy/gi_taxid_nucl.dmp';
-    my $dbhost = $options{dbhost} ? $options{dbhost} : 'tettelin-lx.igs.umaryland.edu';
+    my $ncbitax = $options{ncbitax} ? $options{ncbitax} : '/files_for_mongo';
+    my $gi2tax = $options{gitax} ? $options{gitax} : '/files_for_mongo/gi_taxid_nucl.dmp';
+    my $dbhost = $options{dbhost} ? $options{dbhost} : '172.18.0.1:27017';
     my $taxondb = $options{taxondb} ? $options{taxondb} : 'gi2taxon';
     my $idx_dir = $options{idx_dir} ? $options{idx_dir} : $ncbitax;
-    my $taxoncoll = $options{taxoncoll};
-    if(!$taxoncoll) {
-        $ncbitax =~ /(\d+\_\d+)/;
-        my $date = $1;
-        if($gi2tax =~ /nuc/) {
-            $taxoncoll = "gi2taxonnuc_$date";
-        }
-        else {
-            $taxoncoll = "gi2taxonprot_$date";
-        }
-        
-    }
+    my $taxoncoll = $options{taxoncoll} ? $options{taxoncoll} : 'gi2taxonnuc';
     
     my $idx_dir = $options{idx_dir};
     
