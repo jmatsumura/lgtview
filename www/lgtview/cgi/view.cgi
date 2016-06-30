@@ -12,8 +12,8 @@ use Digest::MD5 qw(md5_hex);
 
 my $cgi = CGI->new;
 
-my $TMP_DIR = '/local/dmz/www/sybil/htdocs/lgt/tmp';
-my $TMP_URL = '/lgt/tmp';
+my $TMP_DIR = '/tmp';
+my $TMP_URL = '/tmp';
 
 my $host = $cgi->param('host');
 my $db = $cgi->param('db');
@@ -27,7 +27,7 @@ my $limit = $cgi->param('limit');
 my $format = $cgi->param('format') ? $cgi->param('format') : 'json';
 my $filter_limit = $cgi->param('flimit');
 
-my $mongo_conn = MongoDB::Connection->new(host => $host);
+my $mongo_conn = MongoDB->connect($host);
 $mongo_conn->query_timeout(-1);
 my $mongo_db = $mongo_conn->get_database($db);
 my $mongo_coll = $mongo_db->get_collection('bwa_mapping');

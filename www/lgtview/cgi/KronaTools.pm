@@ -75,7 +75,7 @@ my %options =
 	'key' => 1,
 	'taxCol' => 2,
 #	'url' => 'http://krona.sourceforge.net'
-	'url' => '/lgtview_tcga_public/KronaTools-2.1'
+	'url' => '/KronaTools-2.1'
 );
 
 # Option format codes to pass to GetOptions (and to be parsed for display).

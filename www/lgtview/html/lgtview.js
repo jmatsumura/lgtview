@@ -3,8 +3,8 @@ Ext.Loader.setConfig({enabled: true});
 
 Ext.onReady(function(){
      var conf = {
-        db: 'lgt16',
-        host: 'mongotest1-lx.igs.umaryland.edu'
+        db: 'lgt',
+        host: '172.18.0.1:27017'
     };
     var allStores = [];
     var portlets = {
@@ -155,7 +155,7 @@ Ext.onReady(function(){
         pageSize: 100,
         proxy: {
             type: 'ajax',
-            url: '/cgi-bin/lgtview/view.cgi',
+            url: '/cgi-bin/view.cgi',
             extraParams: {
                 'db': conf.db,
                 'host': conf.host
