@@ -47,7 +47,7 @@ if( $options{'help'} ){
 $MongoDB::BSON::looks_like_number = 1;
 my $CHUNK_SIZE = $options{chunk_size} ? $options{chunk_size} : 10000;
 my $samtools = "/usr/bin/samtools";
-my $mongo_conn = MongoDB::Connection->new(host => $options{host});
+my $mongo_conn = MongoDB->connect($options{host});
 my $mongo_db = $mongo_conn->get_database($options{db});
 my $admin = $mongo_conn->get_database('admin');
 my $res = $admin->run_command({'isdbgrid' =>1});
@@ -167,7 +167,7 @@ elsif(defined($options{step})) {
     foreach my $key (keys %$all_reads) {
         print STDERR "loading $key\n";
         # Changing this to an update which is effectively an upsert?
-        $mongo_coll->insert($all_reads->{$key});
+        $mongo_coll->insert_one($all_reads->{$key});
     }
 }
 else {
@@ -180,7 +180,7 @@ foreach my $key (keys %$all_reads) {
     if(@$chunk >= $CHUNK_SIZE) {
         print "Inserting a chunk\n";
         if(!$options{dry_run}) {
-            $mongo_coll->batch_insert($chunk);
+            $mongo_coll->insert_many($chunk, { 'safe' => 1 } );
         }
         $chunk = [];
     }
@@ -274,7 +274,8 @@ sub process_metadata {
         }
         if(!$options{file_list}) {
             print STDERR Dumper $metadata->{$fields[1]};
-            $mongo_coll->insert($metadata->{$fields[1]});
+			# This should be one instead of many
+            $mongo_coll->insert_one($metadata->{$fields[1]});
             $metadata = {};  
         }
     }
@@ -298,7 +299,7 @@ sub loop_over_list {
         }
         print "\nLoading $_ ".(keys %$all_reads)." for $step\n";
         foreach my $key (keys %$all_reads) {
-            $mongo_coll->insert($all_reads->{$key});            
+            $mongo_coll->insert_one($all_reads->{$key});            
         }
         $step++;
         close IN;
