@@ -171,9 +171,9 @@ Ext.onReady(function(){
                     Ext.each(meta.columns, function(col) {
                         if(col.header =='read') {
                             col.renderer = function(value,p,record) {
-                                return '<a target=_blank href=http://driley-lx.igs.umaryland.edu:8080/lgtview/twinblast.html#?id='+
+                                return '<a target=_blank href=https://localhost/twinblast.html#?id='+
                                     value+
-                                    '&file=/usr/local/projects/HLGT/driley/output_repository/ncbi-blastn/10090_default/ncbi-blastn.raw.list>'+
+                                    '&file=/files_for_twinblast/ncbi-blastn.raw.list>'+
                                     value+
                                     '</a>';
                             }
@@ -195,10 +195,6 @@ Ext.onReady(function(){
         split: true,
 //        flex: 1,
         columns: [],
-/*            {text: 'read', dataIndex: 'read', type: 'string',width: 80},
-            {text: 'twinview', dataIndex: 'read', type: 'string',width:80,
-            renderer: function(value,p,record) {return '<a target=_blank href=http://driley-lx.igs.umaryland.edu:8080/lgtview/twinblast.html#?id='+value+'&file=/usr/local/projects/HLGT/driley/output_repository/ncbi-blastn/10090_default/ncbi-blastn.raw.list>'+value+'</a>';}},
-        ],*/
         // paging bar on the bottom
         bbar: Ext.create('Ext.PagingToolbar', {
             store: readstore,

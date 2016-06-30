@@ -50,10 +50,10 @@ my $samtools = "/usr/bin/samtools";
 my $mongo_conn = MongoDB->connect($options{host});
 my $mongo_db = $mongo_conn->get_database($options{db});
 my $admin = $mongo_conn->get_database('admin');
-my $res = $admin->run_command({'isdbgrid' =>1});
+my $res = $admin->run_command({'isMaster' =>1});
 my $shardcol = $options{shard_column} ? $options{shard_column} : 'clone_id';
 my $mongo_coll = $mongo_db->get_collection('bwa_mapping');
-if($res->{isdbgrid}) {
+if($res->{isMaster}) {
     print "Looks like we're sharded\n";
     print Dumper $admin->run_command({'enablesharding' => $options{db}});
     print Dumper $admin->run_command(['shardcollection' => $options{db}.'.bwa_mapping','key' => {$shardcol => 1},'unique'=> 1]);
