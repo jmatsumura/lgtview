@@ -44,6 +44,10 @@ my $string_of_metadata; # this is built out by the get_cgquery_data function
 
 open($outfile, ">./metadata_file.out" || die "Can't open file $!");
 
+# Print the base header regardless of whether cgquery file is present
+print $outfile "read\thu_read\thu_e:numeric\thu_len:numeric\thu_blast_lca:list\thu_genus\t";
+print $outfile "read\tbac_read\tbac_e:numeric\tbac_len:numeric\tbac_blast_lca:list\tbac_genus\t";
+
 # Extra processing will happen if three arguments are provided as to get whatever metadata
 # can be found from the cgquery results if this is TCGA data. All files require the BAM
 # files that detail where the reads come from in the host. 
@@ -82,14 +86,14 @@ if ( @ARGV == 3) {
 	print "Done extracting metadata from cgquery result file \n";
 
 	# Print header that includes cgquery fields
-	print $outfile ""
+	print $outfile "analyte_code\tsample_type\tdisease_abbr\tlibrary_strategy\tplatform\thu_ref\n";
 
 } elsif ( @ARGV == 2) {
 	$bam_file = $ARGV[0];
 	$best_blast_file = $ARGV[1];
 
 	# Print header that excludes cgquery fields
-	print $outfile ""
+	print $outfile "hu_ref\n";
 }
 
 print "Extracting metadata from the BAM file ($bam_file) \n";
@@ -109,12 +113,26 @@ while (my $line = <$infile>) {
 
 	my $ref_location = $bam_vals[2]; # more information here, but just grab this for now
 
+	# Exactly which pieces of metadata are tied to the input for LGTView can be customized here
+	my $final_line = join "\t", @vals[15,0,10,3,14]; 
+
+	# Extract just the genus and append to line
+	my @taxonomy = split /;/, $vals[14];
+	# This is a terrible hack that needs to be changed, but just use this for testing. There must
+	# be some output of LGTSeek that specifies genus. For now just hope that you catch a genus
+	# or something more refined and pull that term out. 
+	my $genus = $taxonomy[-1];
+	$genus =~ /(\w+)\s*.*/;
+	$final_line .= "\t$1";
+
 	if ($vals[16] eq 'F') {
-		print $outfile "$line\t";
+		print $outfile "$final_line\t";
 	} elsif ($vals[16] eq 'R') {
-		print $outfile "$line\t$ref_location$string_of_metadata\n";
+		print $outfile "$final_line\t$ref_location$string_of_metadata\n";
 	}
 }
+
+print "Done creating metadata file. Use this to load into MongoDB via lgt_load_mongo.pl \n";
 
 # Function to return the value tied to a particular field in a cgquery result
 sub get_cgquery_data {
