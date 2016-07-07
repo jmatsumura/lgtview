@@ -53,7 +53,7 @@ if ( @ARGV != 1) {
 
 my $bfile = $ARGV[0];
 open(my $infile, "<$bfile") || die "Can't access BLAST results file $bfile: $!";
-open(my $outfile, ">./best_blast_only.out") || die "Can't create outfile$!";
+open(my $outfile, ">./best_blast_only.out") || die "Can't create outfile $!";
 
 my $id=''; 
 
