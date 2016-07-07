@@ -305,7 +305,7 @@ Ext.onReady(function(){
         }
         Ext.apply(kronaparams,conf);
         Ext.Ajax.request({
-            url: '/cgi-bin/lgtview/view.cgi',
+            url: '/cgi-bin/view.cgi',
             params: kronaparams,
             success: function(response){
                 var res = Ext.decode(response.responseText);
@@ -376,7 +376,7 @@ Ext.onReady(function(){
             autoLoad: false,
             proxy: {
                 type: 'ajax',
-                url: '/cgi-bin/lgtview/view.cgi',
+                url: '/cgi-bin/view.cgi',
                 extraParams: {
                     'criteria': params.name,
                     'db': conf.db,

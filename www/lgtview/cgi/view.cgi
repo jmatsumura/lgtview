@@ -28,7 +28,7 @@ my $format = $cgi->param('format') ? $cgi->param('format') : 'json';
 my $filter_limit = $cgi->param('flimit');
 
 my $mongo_conn = MongoDB->connect($host);
-$mongo_conn->query_timeout(-1);
+#$mongo_conn->query_timeout(-1);
 my $mongo_db = $mongo_conn->get_database($db);
 my $mongo_coll = $mongo_db->get_collection('bwa_mapping');
 my $outputcollname = "$criteria\_mappings";

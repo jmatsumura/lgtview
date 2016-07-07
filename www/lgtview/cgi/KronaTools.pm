@@ -212,7 +212,7 @@ default, the basename of the file will be used.',
 # Global constants #
 ####################
 
-my $libPath = `ktGetLibPath`;
+my $libPath = `/KronaTools-2.1/lib`;
 my $taxonomyDir = "$libPath/../taxonomy";
 my $ecFile = "$libPath/../data/ec.tsv";
 
