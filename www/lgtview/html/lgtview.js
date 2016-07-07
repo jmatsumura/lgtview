@@ -3,7 +3,7 @@ Ext.Loader.setConfig({enabled: true});
 
 Ext.onReady(function(){
      var conf = {
-        db: 'lgt',
+        db: 'lgtview_kpl1',
         host: '172.18.0.1:27017'
     };
     var allStores = [];
@@ -17,36 +17,26 @@ Ext.onReady(function(){
             width: 120,
             sortable: true
         }*/
-        fields: [
+/*        fields: [
             {mapping: '_id',name: 'Sample Type',type: 'string'},
             {name: 'count', type: 'int'}
-        ]
+        ]*/
     });
+
     var offset = 0;
-    addWindow({'name': 'Analyte Type',
-               'title': 'Analyte Type',
-               'modname': 'analyte'
+    addWindow({'name': 'hu_genus',
+               'title': 'Euk Genus',
+               'modname': 'hu_genus'
               });
 
     addWindow({'name': 'hu_ref',
                'title': 'Human Mappings',
                'modname': 'hu_ref'});
 
-    addWindow({'name': 'Disease',
-               'title': 'Disease',
-               'modname': 'disease'});
+    addWindow({'name': 'bac_genus',
+               'title': 'Bac Genus',
+               'modname': 'bac_genus'});
 
-    addWindow({'name': 'Tissue Source Site',
-               'title': 'Tissue Source Site',
-               'modname': 'tissuess'});    
-
-    addWindow({'name': 'Participant Number',
-               'title': 'Participant',
-               'modname': 'participant'});  
-  
-    addWindow({'name': 'Sample Type',
-               'title': 'Sample Type',
-               'modname': 'sample'});  
     Ext.regModel('filters',{
         fields: [
             {name: 'key',type: 'string'},
@@ -146,8 +136,8 @@ Ext.onReady(function(){
             {name: 'read',type: 'string'},
             {name: 'twinblast', type: 'string'},
         ]*/
-    }
-    );
+    });
+
     var readgrid;
     var configured = false;
     var readstore = new Ext.data.Store({

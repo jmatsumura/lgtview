@@ -41,6 +41,10 @@ my $best_blast_file;
 my $infile;
 my $outfile;
 my $string_of_metadata; # this is built out by the get_cgquery_data function
+# Variables to help order BLAST results output to be euk->bac->euk->bac. 
+my $euk_entry;
+my $bac_entry;
+my $num_of_entries = 0;
 
 open($outfile, ">./metadata_file.out" || die "Can't open file $!");
 
@@ -125,10 +129,20 @@ while (my $line = <$infile>) {
 	$genus =~ /(\w+)\s*.*/;
 	$final_line .= "\t$1";
 
-	if ($vals[16] eq 'F') {
-		print $outfile "$final_line\t";
-	} elsif ($vals[16] eq 'R') {
-		print $outfile "$final_line\t$ref_location$string_of_metadata\n";
+	# Reads are not always in an order of hu-> bac -> hu -> bac. Thus, before printing out each pair
+	# decide via the domain level of taxonomic classification to put euk before bac. 
+	if ($taxonomy[1] eq 'Eukaryota'){
+		$euk_entry = $final_line;
+		$num_of_entries++;
+	} elsif ($taxonomy[1] eq 'Bacteria'){
+		$bac_entry = $final_line;
+		$num_of_entries++;
+	}
+
+	if ($num_of_entries == 2) {
+		print $outfile "$euk_entry\t";
+		print $outfile "$bac_entry\t$ref_location$string_of_metadata\n";
+		$num_of_entries = 0;
 	}
 }
 
