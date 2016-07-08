@@ -23,7 +23,12 @@ recipient reference genome).
 
 =head1 USAGE
 
-./extract_metadata.pl cgquery_outfile relevant_bamfile best_blast_overall
+With TCGA metadata:
+./extract_metadata.pl cgquery_outfile relevant_bamfile best_blast_overall my_out_file.tsv
+
+Without TCGA metadata:
+./extract_metadata.pl relevant_bamfile best_blast_overall my_out_file.tsv
+
 
 =head1 AUTHOR - James Matsumura
 
@@ -39,14 +44,14 @@ my $cgquery_file;
 my $bam_file;
 my $best_blast_file;
 my $infile;
-my $outfile;
+my $out = $ARGV[3];
 my $string_of_metadata; # this is built out by the get_cgquery_data function
 # Variables to help order BLAST results output to be euk->bac->euk->bac. 
 my $euk_entry;
 my $bac_entry;
 my $num_of_entries = 0;
 
-open($outfile, ">./metadata_file.out" || die "Can't open file $!");
+open(my $outfile, ">$out" || die "Can't open file $!");
 
 # Print the base header regardless of whether cgquery file is present
 print $outfile "read\thu_read\thu_e:numeric\thu_len:numeric\thu_blast_lca:list\thu_genus\t";
@@ -55,7 +60,7 @@ print $outfile "read\tbac_read\tbac_e:numeric\tbac_len:numeric\tbac_blast_lca:li
 # Extra processing will happen if three arguments are provided as to get whatever metadata
 # can be found from the cgquery results if this is TCGA data. All files require the BAM
 # files that detail where the reads come from in the host. 
-if ( @ARGV == 3) {
+if ( @ARGV == 4) {
 
 	$cgquery_file = $ARGV[0];
 	$bam_file = $ARGV[1];
@@ -92,7 +97,7 @@ if ( @ARGV == 3) {
 	# Print header that includes cgquery fields
 	print $outfile "analyte_code\tsample_type\tdisease_abbr\tlibrary_strategy\tplatform\thu_ref\n";
 
-} elsif ( @ARGV == 2) {
+} elsif ( @ARGV == 3) {
 	$bam_file = $ARGV[0];
 	$best_blast_file = $ARGV[1];
 

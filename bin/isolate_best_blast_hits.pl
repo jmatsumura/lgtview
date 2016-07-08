@@ -46,14 +46,15 @@ e-mail: jmatsumura@som.umaryland.edu
 
 use strict;
 
-if ( @ARGV != 1) {
-	print "Please provide the BLAST results file containing hits for both pairs of a read like so: $0 blast_overall\n";
+if ( @ARGV != 2) {
+	print "Please provide the BLAST results file containing hits for both pairs of a read like so: $0 blast_overall my_out_file.txt \n";
 	exit(1);
 }
 
 my $bfile = $ARGV[0];
+my $outfile = $ARGV[1];
 open(my $infile, "<$bfile") || die "Can't access BLAST results file $bfile: $!";
-open(my $outfile, ">./best_blast_only.out") || die "Can't create outfile $!";
+open(my $outfile, ">$outfile") || die "Can't create outfile $!";
 
 my $id=''; 
 
