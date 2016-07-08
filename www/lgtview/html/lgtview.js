@@ -85,7 +85,7 @@ Ext.onReady(function(){
                 lazyRender: true,
                 listClass: 'x-combo-list-small'
             }},
-            {text: 'value', dataIndex: 'value', type: 'string',width:80},
+            {text: 'value', dataIndex: 'value', type: 'string', width:80, editor: {xtype: 'textfield'}},
 
             {xtype: 'actioncolumn',
                 width: 20,
@@ -206,7 +206,7 @@ Ext.onReady(function(){
             loadMask: false
         },
         items: [{
-            xtype : "component",
+            xtype : 'component',
             id    : 'bac-iframe',
             autoEl : {
                 tag : "iframe",
@@ -217,11 +217,28 @@ Ext.onReady(function(){
     });
 //    bacwin.show();
 
+	var titlebar = new Ext.Panel({
+		height: 54,
+        region: 'north',
+        forcefit: true,
+        layout: 'hbox',
+        items: [
+        {width: 260,
+        xtype: 'container',
+//      padding: '0',
+        html: '<img height=50px src=lgtview_logo_50px_trans.png>'},
+        {width: 800,
+        xtype: 'container',
+            padding: '10 0 0 10',
+		html: '<i>The reads below are putative Lateral Gene Transfer reads. They are paired-end reads where one mate maps to a donor genome and the other mate maps to a host genome. Clicking on the pie charts will filter the reads in the display. Selecting/deselecting elements from the \'filters\' section will also change the reads in the display. Clicking on a read name in the \'read\' column will open a page with blast results for that read.</i>'},
+        {flex: 1,xtype: 'container'}
+        ]
+	});
 
     var vp = new Ext.Viewport({
-        items: [
+        items: [titlebar,
             {xtype: 'portalpanel',
-             id: 'portapanel',
+             id: 'portalpanel',
              region: 'center',
              title: 'Graphs',
              items: [{
@@ -433,12 +450,12 @@ Ext.onReady(function(){
         });
         allStores.push(newstore);
         if(portlets[0].length <= portlets[1].length) {
-            portlets[0].push({title: params.name,
+            portlets[0].push({title: '' + params.name,
                               height: 200,
                               items: newchart});
         }
         else {
-            portlets[1].push({title: params.name,
+            portlets[1].push({title: '' + params.name,
                               height: 200,
                               items: newchart});
         }
