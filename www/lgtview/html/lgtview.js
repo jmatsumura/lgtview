@@ -284,18 +284,18 @@ Ext.onReady(function(){
                 allfilters[rec.data.key] = {'$ne': rec.data.value};
             }
         });
-        if(cov_field.getValue() != '') {
+        /*if(cov_field.getValue() != '') {
             allfilters['hu_cov'] = {'$gt' : cov_field.getValue()*1};
         }
         if(blast_gen.getValue() != '') {
             allfilters['bac_blast'] = {'$regex': blast_gen.getValue()};
-        }
-        else if(blast_valid.getValue()) {
+        }*/
+        if(blast_valid.getValue()) {
             allfilters['bac_blast_lca'] = 'Bacteria';
         }
-        if(prinseq_derep.getValue()) {
+        /*if(prinseq_derep.getValue()) {
             allfilters['prinseq_rep'] = "";
-        }
+        }*/
 
         // Reload the Krona Plot here
         var kronaparams = {
