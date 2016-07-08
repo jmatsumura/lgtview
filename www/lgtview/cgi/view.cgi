@@ -12,8 +12,8 @@ use Digest::MD5 qw(md5_hex);
 
 my $cgi = CGI->new;
 
-my $TMP_DIR = '/tmp';
-my $TMP_URL = '/tmp';
+my $TMP_DIR = '/var/www/html/tmp';
+my $TMP_URL = '/var/www/html/tmp';
 
 my $host = $cgi->param('host');
 my $db = $cgi->param('db');
