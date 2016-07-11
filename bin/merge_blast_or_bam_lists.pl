@@ -62,18 +62,24 @@ if ( $fasta_or_bam eq 'blast') {
 } elsif ( $fasta_or_bam eq 'bam') {
 
 	print "Merging BAM files specified in list ($list_file) \n";
+	my $single_file = '';
 
 	# The samtools merge command takes in individual .bam files and merges them into the
 	# final outfile. Thus, build this command string using the list and run it at the end. 
 	my $sam_merge_cmd = "$samtools merge $out";
 
 	while (my $line = <$infile>) {
-
+		$num_of_entries++;
 		chomp($line);
+		$single_file = $line;
 		$sam_merge_cmd .= " $line";
 	}
 
-	`$sam_merge_cmd`;
+	if($num_of_entries > 1) {
+		`$sam_merge_cmd`;
+	} else {
+		`cp $single_file $out`;
+	}
 
 	print "Done merging BAM files. Use this to run extract_metadata.pl \n";
 
