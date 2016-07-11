@@ -11,12 +11,12 @@ Extracts metadata from the output of LGTseek and enables this to be loaded into 
 
 =head1 DESCRIPTION
 
-This script is just to concatenate lists of either raw BLAST results or BAM files. These raw
-BLAST results can then be ready for use by TwinBLAST. Merging BAM files provides one of the
-necessary inputs for extract_metadata.pl (with the others produced already by LGTSeek).
+This script is a precursor for two scripts. First, merging BLAST result files provides the input for
+isolate_best_blast_hits.pl which this output can then be used for extract_metadata.pl. Second, 
+merging BAM files provides the other input for extract_metadata.pl.
 
 *** PLEASE NOTE THE FOLLOWING ***
--The BLAST files should be in raw output format.
+-The BLAST files should be in m8 format.
 -This script requires samtools installed in order to merge the bam files. 
 
 =head1 USAGE
@@ -44,17 +44,17 @@ if ( @ARGV != 3) {
 	exit(1)
 }
 
-open(my $outfile, ">$out" || die "Can't open file $!");
+open(my $infile, "<$list_file" || die "Can't open file $!");
 
 if ( $fasta_or_bam eq 'blast') {
 
 	print "Merging BLAST files specified in list ($list_file) \n";
 
 	# Each line in this list file is a path to an individual FASTA file
-	while (my $line = <$list_file>) {
+	while (my $line = <$infile>) {
 
 		chomp($line);
-		`cat $line >> $outfile`;
+		`cat $line >> $out`;
 	}
 
 	print "Done merging BLAST files. Use this to run isolate_best_blast_hits.pl \n";
@@ -65,9 +65,9 @@ if ( $fasta_or_bam eq 'blast') {
 
 	# The samtools merge command takes in individual .bam files and merges them into the
 	# final outfile. Thus, build this command string using the list and run it at the end. 
-	my $sam_merge_cmd = "$samtools merge $outfile";
+	my $sam_merge_cmd = "$samtools merge $out";
 
-	while (my $line = <$list_file>) {
+	while (my $line = <$infile>) {
 
 		chomp($line);
 		$sam_merge_cmd .= " $line";
