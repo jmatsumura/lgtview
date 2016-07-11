@@ -56,20 +56,76 @@ my $outfile = $ARGV[1];
 open(my $infile, "<$bfile") || die "Can't access BLAST results file $bfile: $!";
 open(my $outfile, ">$outfile") || die "Can't create outfile $!";
 
-my $id=''; 
+my $id = ''; 
+my $found1 = 0;
+my $found2 = 0;
+my $line1 = '';
+my $line2 = '';
+my $id1 = '';
+my $id2 = '';
 
 while (my $line = <$infile>) {
+
 	my @vals = split /\t/, $line;
 
-	if($id eq ''){ # account for start of file
+	if($id eq ''){ # account for start of pair of reads
 		$id = $vals[0];
-		print $outfile "$line";
+	
+		# Need to start with mate 1
+		if ($id =~ /\/1$/) {
+			$found1 = 1;
+			$line1 = $line;
+
+		} else {
+
+			$id = '';
+			next;
+		}
 
 	} elsif($id eq $vals[0]){ # account for 2nd-n best hits
 		next;
 
-	} elsif($id ne $vals[0]){ # account for next read ID
+	} elsif($id ne $vals[0]){ # account for next read ID in a pair
 		$id = $vals[0];
-		print $outfile "$line";
+
+		# Need to perform a check here to ensure this is the second of a pair as 
+		# without that it wouldn't catch:
+		# SRR00010000/1 ~
+		# SRR00020000/1 ~
+		if ($id =~ /\/2$/) {
+			$found2 = 1;
+			$line2 = $line;
+
+		} else {
+
+			# If this isn't mate 2, then mate 1 has no mate 2 and the current mate 1
+			# that is in this line needs to be reinitialized as mate 1.
+			$id = $vals[0];
+			$found1 = 1;
+			$line1 = $line;
+
+		}
+	}
+
+	# Unfortunately, each individual read isn't guaranteed to be part of a pair if no
+	# results were identified for one of them. Account for this here. 
+	if ($found1 == 1 && $found2 == 1){
+
+		$line1 =~ /^(.*)\/1\t/;
+		$id1 = $1;
+		$line2 =~ /^(.*)\/2\t/;
+		$id2 = $1;
+
+		# Only print if these reads are indeed part of a pair
+		if($id1 eq $id2){
+			print $outfile "$line1";
+			print $outfile "$line2";
+		}
+
+		$id = '';
+		$found1 = 0;
+		$found2 = 0;
+		$line1 = '';
+		$line2 = '';
 	}
 }
