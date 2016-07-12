@@ -1,13 +1,13 @@
 Ext.onReady(function(){
 
 	// Path to guiblast CGI script
-	var GUIBLAST_URL = '/cgi-bin/guiblast'; 
+	var GUIBLAST_URL = '/cgi-bin/guiblast.cgi'; 
 
 	// Path to TwinBLAST DB access component for annotation/curation
-	var CURATION_URL = '/cgi-bin/twinblastDB'; 
+	var CURATION_URL = '/cgi-bin/twinblastDB.cgi'; 
 
 	// Path to TwinBLAST DB access component for annotation/curation
-	var REPORT_URL = '/cgi-bin/generateReport'; 
+	var REPORT_URL = '/cgi-bin/generateReport.cgi'; 
 
     // Pull out what's in the URL
     var vars = getUrlVars();
