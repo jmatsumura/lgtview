@@ -49,14 +49,25 @@ open(my $infile, "<$list_file" || die "Can't open file $!");
 if ( $fasta_or_bam eq 'blast') {
 
 	print "Merging BLAST files specified in list ($list_file) \n";
+	my $tmp = "./tmp_blast_file.raw";
+	my $footer = '';
 
-	# Each line in this list file is a path to an individual FASTA file
+	# Each line in this list file is a path to an individual BLAST raw output file
 	while (my $line = <$infile>) {
 
+		# Hack to get the formatting right. This is certainly not accurate in terms
+		# of the BLAST summary results at the end but that is not used for these scripts
+		# while they do expect this footer for using modules to parse the raw results.
 		chomp($line);
-		`cat $line >> $out`;
+		`head -n -29 $line > $tmp`;
+		`tail -n 29 $line > $footer`;
+		`cat $tmp >> $out`;
 	}
 
+	# Only append the very last footer found. Again, this is arbitrary but the data is 
+	# note used and the footer is required for proper parsing by bioperl libs. 
+	`rm $tmp`;
+	`cat $footer >> $out`;
 	print "Done merging BLAST files. Use this to run isolate_best_blast_hits.pl \n";
 
 } elsif ( $fasta_or_bam eq 'bam') {
