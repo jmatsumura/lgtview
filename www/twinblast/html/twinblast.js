@@ -42,7 +42,7 @@ Ext.onReady(function(){
     if(id && left_file && right_file) {
         collapse_form = true;
     }
-    var show_list = false;
+    var show_list = true;
     if(!id && (file || list)) {
         single_file = true,
         show_list = true;
