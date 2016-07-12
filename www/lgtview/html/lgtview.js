@@ -4,7 +4,9 @@ Ext.Loader.setConfig({enabled: true});
 Ext.onReady(function(){
      var conf = {
         db: 'lgtview_example',
-        host: '172.18.0.1:27017'
+        host: '172.18.0.1:27017',
+		site: 'https://localhost:443/twinblast.html'
+		site: 'http://localhost:8080/twinblast.html'
     };
     var allStores = [];
     var portlets = {
@@ -145,6 +147,7 @@ Ext.onReady(function(){
         pageSize: 100,
         proxy: {
             type: 'ajax',
+			timeout: 5000000,
             url: '/cgi-bin/view.cgi',
             extraParams: {
                 'db': conf.db,
@@ -159,11 +162,11 @@ Ext.onReady(function(){
             metachange : function(store,meta) {
                 if(!configured && meta != undefined) {
                     Ext.each(meta.columns, function(col) {
-                        if(col.header =='read') {
+                        if(col.dataIndex =='read') {
                             col.renderer = function(value,p,record) {
-                                return '<a target=_blank href=https://localhost/twinblast.html#?id='+
+                                return '<a target=_blank href=' + conf.site + '#?id='+
                                     value+
-                                    '&file=/files_for_twinblast/ncbi-blastn.raw.list>'+
+                                    '&file=example_blastn.out>'+
                                     value+
                                     '</a>';
                             }

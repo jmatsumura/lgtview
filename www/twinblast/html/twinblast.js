@@ -17,8 +17,8 @@ Ext.onReady(function(){
     // We need these three if we're going to use a single file
     var file = vars.file ? unescape(vars.file) : undefined;
     var list = vars.list ? unescape(vars.list) : undefined;
-    var left_suff = vars.leftsuff ? vars.leftsuff : '_bac';
-    var right_suff = vars.rightsuff ? vars.rightsuff : '_human';
+    var left_suff = vars.leftsuff ? vars.leftsuff : '/1';
+    var right_suff = vars.rightsuff ? vars.rightsuff : '/2';
 
     // We'll need these 2 if we're using multiple files
     var left_file = vars.leftfile ? unescape(vars.leftfile) : undefined;
@@ -374,7 +374,7 @@ Ext.onReady(function(){
 				url: REPORT_URL,
 				// This timeout is exceedingly high, can reduce it but if the 
 				// files are huge it will take quite some time. 
-				timeout: 600000, 
+				timeout: 6000000, 
 				params: report_config,
             	success: function(response) {
                 	var res = Ext.JSON.decode(response.responseText,true);
