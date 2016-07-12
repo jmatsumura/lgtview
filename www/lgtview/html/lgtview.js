@@ -3,7 +3,7 @@ Ext.Loader.setConfig({enabled: true});
 
 Ext.onReady(function(){
      var conf = {
-        db: 'lgtview_kpl1',
+        db: 'lgtview_example',
         host: '172.18.0.1:27017'
     };
     var allStores = [];
@@ -24,14 +24,14 @@ Ext.onReady(function(){
     });
 
     var offset = 0;
-    addWindow({'name': 'hu_genus',
+    addWindow({'name': 'euk_genus',
                'title': 'Euk Genus',
-               'modname': 'hu_genus'
+               'modname': 'euk_genus'
               });
 
-    addWindow({'name': 'hu_ref',
-               'title': 'Human Mappings',
-               'modname': 'hu_ref'});
+    addWindow({'name': 'euk_ref',
+               'title': 'Eukaryote Mappings',
+               'modname': 'euk_ref'});
 
     addWindow({'name': 'bac_genus',
                'title': 'Bac Genus',
