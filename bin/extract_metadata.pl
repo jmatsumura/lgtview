@@ -44,17 +44,31 @@ my $cgquery_file;
 my $bam_file;
 my $best_blast_file;
 my $infile;
-my $out = $ARGV[3];
-my $string_of_metadata; # this is built out by the get_cgquery_data function
+my $out;
+# this is built out by the get_cgquery_data function. will be empty if no cgquery data present
+my $string_of_metadata; 
 # Variables to help order BLAST results output to be euk->bac->euk->bac. 
-my $euk_entry;
-my $bac_entry;
+my $euk_entry = '';
+my $bac_entry = '';
 my $num_of_entries = 0;
+
+if ( @ARGV != 3 && @ARGV != 4) {
+	print "Incorrect number of arguments. Please view the 'usage' section at the top ".
+		  "of this file for how to run this script.\n";
+	exit(1);
+}
+
+# Handle this immediately to reduce the amount of outfile manipulation.
+if ( @ARGV == 4) {
+	$out = $ARGV[3];
+} elsif ( @ARGV == 3) {
+	$out = $ARGV[2];
+}
 
 open(my $outfile, ">$out" || die "Can't open file $!");
 
 # Print the base header regardless of whether cgquery file is present
-print $outfile "read\thu_read\thu_e:numeric\thu_len:numeric\thu_blast_lca:list\thu_genus\t";
+print $outfile "read\teuk_read\teuk_e:numeric\teuk_len:numeric\teuk_blast_lca:list\teuk_genus\t";
 print $outfile "read\tbac_read\tbac_e:numeric\tbac_len:numeric\tbac_blast_lca:list\tbac_genus\t";
 
 # Extra processing will happen if three arguments are provided as to get whatever metadata
@@ -65,7 +79,7 @@ if ( @ARGV == 4) {
 	$cgquery_file = $ARGV[0];
 	$bam_file = $ARGV[1];
 	$best_blast_file = $ARGV[2];
-	print "Extracting metadata from both the cgquery result file ($cgquery_file) and BAM file ($bam_file) \n";
+	print "Extracting metadata from both the cgquery result file ($cgquery_file)\n";
 
 	open($infile, "<$cgquery_file" || die "Can't open file $cgquery_file");
 
@@ -95,17 +109,17 @@ if ( @ARGV == 4) {
 	print "Done extracting metadata from cgquery result file \n";
 
 	# Print header that includes cgquery fields
-	print $outfile "analyte_code\tsample_type\tdisease_abbr\tlibrary_strategy\tplatform\thu_ref\n";
+	print $outfile "analyte_code\tsample_type\tdisease_abbr\tlibrary_strategy\tplatform\teuk_ref\n";
 
 } elsif ( @ARGV == 3) {
 	$bam_file = $ARGV[0];
 	$best_blast_file = $ARGV[1];
 
 	# Print header that excludes cgquery fields
-	print $outfile "hu_ref\n";
+	print $outfile "euk_ref\n";
 }
 
-print "Extracting metadata from the BAM file ($bam_file) \n";
+print "Extracting metadata from the BAM file ($bam_file), please wait... \n";
 open($infile, "<$best_blast_file" || die "Can't open file $best_blast_file");
 
 # The first line needs to be tab-delimited and denote what each of the TSVs are in the file
@@ -136,6 +150,8 @@ while (my $line = <$infile>) {
 
 	# Reads are not always in an order of hu-> bac -> hu -> bac. Thus, before printing out each pair
 	# decide via the domain level of taxonomic classification to put euk before bac. 
+
+	# CHANGE THE LOGIC HERE IF YOU DON'T JUST WANT EUK v BAC LGT RESULTS 
 	if ($taxonomy[1] eq 'Eukaryota'){
 		$euk_entry = $final_line;
 		$num_of_entries++;
@@ -145,9 +161,20 @@ while (my $line = <$infile>) {
 	}
 
 	if ($num_of_entries == 2) {
-		print $outfile "$euk_entry\t";
-		print $outfile "$bac_entry\t$ref_location$string_of_metadata\n";
+		
+		# At this point we have found both mates to a pair. However, we are just concerned with LGT
+		# between euks and bacs. Thus, if exactly one of each of these are not present then omit the
+		# pair from the output. 
+
+		# CHANGE THE LOGIC HERE IF YOU DON'T JUST WANT EUK v BAC LGT RESULTS 
+		if ( $euk_entry ne '' && $bac_entry ne '' ) { 
+			print $outfile "$euk_entry\t";
+			print $outfile "$bac_entry\t$ref_location$string_of_metadata\n";
+		}
+
 		$num_of_entries = 0;
+		$euk_entry = '';
+		$bac_entry = '';
 	}
 }
 
