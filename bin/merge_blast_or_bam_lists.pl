@@ -50,7 +50,7 @@ if ( $fasta_or_bam eq 'blast') {
 
 	print "Merging BLAST files specified in list ($list_file) \n";
 	my $tmp = "./tmp_blast_file.raw";
-	my $footer = '';
+	my $footer = './tmp_blast_footer.raw';
 
 	# Each line in this list file is a path to an individual BLAST raw output file
 	while (my $line = <$infile>) {
@@ -65,9 +65,10 @@ if ( $fasta_or_bam eq 'blast') {
 	}
 
 	# Only append the very last footer found. Again, this is arbitrary but the data is 
-	# note used and the footer is required for proper parsing by bioperl libs. 
-	`rm $tmp`;
+	# not used and the footer is required for proper parsing by bioperl libs. 
 	`cat $footer >> $out`;
+	`rm $tmp`;
+	`rm $footer`;
 	print "Done merging BLAST files. Use this to run isolate_best_blast_hits.pl \n";
 
 } elsif ( $fasta_or_bam eq 'bam') {
