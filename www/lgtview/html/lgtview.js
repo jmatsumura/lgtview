@@ -105,28 +105,41 @@ Ext.onReady(function(){
         ]
     });
 
-    var cov_field = new Ext.form.field.Text({
-        fieldLabel: 'min coverage',
-        value: 5,
-        name: 'cov'
+    var min_euk_len = new Ext.form.field.Text({
+        fieldLabel: 'min euk length',
+        value: 15,
+        name: 'min_euk_len'
     });
-    var blast_gen = new Ext.form.field.Text({
+    var min_bac_len = new Ext.form.field.Text({
+        fieldLabel: 'min bac length',
+        value: 15,
+        name: 'min_bac_len'
+    });
+    var chosen_euk_genus = new Ext.form.field.Text({
+        fieldLabel: 'eukaryote genus',
+        name: 'chosen_euk_genus'
+    });
+    var chosen_bac_genus = new Ext.form.field.Text({
+        fieldLabel: 'bacteria genus',
+        name: 'chosen_bac_genus'
+    });
+    /*var blast_gen = new Ext.form.field.Text({
         fieldLabel: 'BLAST genus',
         name: 'blast_gen'
-    });
-    var blast_valid = new Ext.form.field.Checkbox({
+    });*/
+    /*var blast_valid = new Ext.form.field.Checkbox({
         fieldLabel: 'Valid BLAST',
         name: 'blast_val'
-    });
-    var prinseq_derep = new Ext.form.field.Checkbox({
+    });*/
+    /*var prinseq_derep = new Ext.form.field.Checkbox({
         fieldLabel: 'Prinseq Dereplication',
         name: 'prinseq_rep'
-    });
+    });*/
     var filterform = new Ext.form.Panel({
 //        height: '100%',
         width: '100%',
         frame: true,
-        items: [cov_field,blast_gen,blast_valid,prinseq_derep]
+        items: [min_euk_len,min_bac_len,chosen_euk_genus,chosen_bac_genus]
     });
 
     Ext.regModel('reads',{
@@ -310,9 +323,21 @@ Ext.onReady(function(){
         if(blast_gen.getValue() != '') {
             allfilters['bac_blast'] = {'$regex': blast_gen.getValue()};
         }*/
-        if(blast_valid.getValue()) {
-            allfilters['bac_blast_lca'] = 'Bacteria';
+        if(min_euk_len.getValue() != '') {
+            allfilters['euk_len'] = {'$gt': min_euk_len.getValue()*1};
         }
+        if(min_bac_len.getValue() != '') {
+            allfilters['bac_len'] = {'$gt': min_bac_len.getValue()*1};
+        }
+        if(chosen_euk_genus.getValue() != '') {
+            allfilters['euk_genus'] = {'$regex': chosen_euk_genus.getValue()};
+        }
+        if(chosen_bac_genus.getValue() != '') {
+            allfilters['bac_genus'] = {'$regex': chosen_bac_genus.getValue()};
+        }
+        /*if(blast_valid.getValue()) {
+            allfilters['bac_blast_lca'] = 'Bacteria';
+        }*/
         /*if(prinseq_derep.getValue()) {
             allfilters['prinseq_rep'] = "";
         }*/
