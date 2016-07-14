@@ -212,6 +212,7 @@ Ext.onReady(function(){
     var bacwin = new Ext.Panel({
         title: 'Bacterial Mappings',
         layout: 'fit',
+        split: true,
         region: 'east',
 //        x: 150,
 //        y: 10,
