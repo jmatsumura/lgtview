@@ -26,6 +26,8 @@ Ext.onReady(function(){
     });
 
     var offset = 0;
+
+// START CHART SECTION
     addWindow({'name': 'euk_genus',
                'title': 'Euk Genus',
                'modname': 'euk_genus'
@@ -38,6 +40,7 @@ Ext.onReady(function(){
     addWindow({'name': 'bac_genus',
                'title': 'Bac Genus',
                'modname': 'bac_genus'});
+// END CHART SECTION
 
     Ext.regModel('filters',{
         fields: [
@@ -105,6 +108,7 @@ Ext.onReady(function(){
         ]
     });
 
+// START FILTER SECTION 1
     var min_euk_len = new Ext.form.field.Text({
         fieldLabel: 'min euk length',
         value: 15,
@@ -141,6 +145,7 @@ Ext.onReady(function(){
         frame: true,
         items: [min_euk_len,min_bac_len,chosen_euk_genus,chosen_bac_genus]
     });
+// END FILTER SECTION 1
 
     Ext.regModel('reads',{
 /*        defaults:{
@@ -318,6 +323,8 @@ Ext.onReady(function(){
                 allfilters[rec.data.key] = {'$ne': rec.data.value};
             }
         });
+
+// START FILTER SECTION 2
         /*if(cov_field.getValue() != '') {
             allfilters['hu_cov'] = {'$gt' : cov_field.getValue()*1};
         }
@@ -342,6 +349,7 @@ Ext.onReady(function(){
         /*if(prinseq_derep.getValue()) {
             allfilters['prinseq_rep'] = "";
         }*/
+// END FILTER SECTION 2
 
         // Reload the Krona Plot here
         var kronaparams = {
