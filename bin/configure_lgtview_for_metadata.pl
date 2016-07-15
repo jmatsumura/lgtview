@@ -18,8 +18,8 @@ LINE 1 - tab delimited values of whatever metadata fields should be represented 
 value should be followed by a pipe and then the text that should be the title of the chart display.
 
 LINE 2 - tab delimited values with the metadata field followed by a pipe and then either a "n" 
-or an "l" to designate whether to make this comparable to a number or string value respectively. If
-a number is to be compared to, add in a greater than or less than symbol to determine whether or not
+or a "l" to designate whether to make this comparable to a number or letter (string) value respectively.
+If a number is to be compared to, add in a greater than or less than symbol to determine whether or not
 they want this to be filtered with min or max values. 
 
 Please note that these metadata fields MUST match exactly what is found in the first line of the
@@ -30,7 +30,7 @@ name|Name	phone_number|Phone Number	occupation|Occupation
 weight|n|>	age|n|<	address|l
 
 Notice how there are no overlapping fields. While it would work to add in metadata fields for both
-the charts and filters panels of LGTView, it would be a bit redundant in functionality as they both
+the chart and filter panels of LGTView, it would be a bit redundant in functionality as they both
 accomplish the same thing. Instead, place variables that would lend themselves better to being part
 of a larger group in the charts and those values that are likely to be highly individual into the
 filters panel. For example, phone numbers would be better in the filters since it would be unlikely
@@ -132,8 +132,6 @@ $filterForm .= "\t\tframe: true,\n";
 $filterForm .= "\t\titems: [$combinedFilters]\n";
 $filterForm .= "\t});\n";
 
-
-
 # At this point all the JS formatted content which is needed to populate 
 # the file is present. Now parse the original JS file and create a new
 # custom version of it. 
@@ -198,9 +196,9 @@ while (my $line = <$lgtviewJS>) {
 	}
 }
 
-
-
 # The last step now is to overwrite the file that was passed in as the JS for the site
+# Keep a backup incase the user wants the original copy
+`cp $ARGV[1] ./lgtview.bak.js`;
 `mv $tmpfile $ARGV[1]`;
 
 # Use this function to replace spaces with underscores and format the filters sections
